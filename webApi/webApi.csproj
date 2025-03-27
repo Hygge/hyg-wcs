@@ -20,6 +20,7 @@
     <ProjectReference Include="..\jobcoreModule\jobcoreModule.csproj" />
     <ProjectReference Include="..\otherSystemModule\otherSystemModule.csproj" />
     <ProjectReference Include="..\quartzModeule\quartzModeule.csproj" />
+    <ProjectReference Include="..\wmsModule\wmsModule.csproj" />
   </ItemGroup>
 
   <ItemGroup>

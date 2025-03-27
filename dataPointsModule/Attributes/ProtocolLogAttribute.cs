@@ -33,9 +33,7 @@ public class ProtocolLogAttribute : AbstractInterceptorAttribute
         long start = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         try
         {
-            Dictionary<string, object> map =JsonConvert.DeserializeObject<Dictionary<string, object>>(
-                JsonConvert.SerializeObject(context.Parameters[0])
-                );
+            Dictionary<string, object> map =JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(context.Parameters[0]));
             protocolLog.id = YitIdHelper.NextId();
             string name = map.TryGetValue("name", out object obj) ? Convert.ToString(obj) : string.Empty;
             //string category = map.TryGetValue("category", out object obj1) ? Convert.ToString(obj1) : string.Empty;

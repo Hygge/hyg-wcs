@@ -22,6 +22,7 @@ using otherSystemModule;
 using quartzModeule;
 using webApi.Authorizations;
 using webApi.Middlewares;
+using wmsModule;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -89,6 +90,7 @@ builder.Services.AddQuartzModule();
 
 builder.Services.AddOtherSystemModule();
 builder.Services.AddJobCoreModule();
+builder.Services.AddWmsModule();
 
 var app = builder.Build();
 
@@ -120,6 +122,7 @@ app.UseServiceProvider();
 // 初始化数据库表
 
 
+/*
 using var db = app.Services.GetService<DbClientFactory>().GetSqlSugarClient();
 var tables = db.DbMaintenance.GetTableInfoList(false);//true 走缓存 false不走缓存
 if (tables == null || tables.Count == 0 )
@@ -132,8 +135,10 @@ if (tables == null || tables.Count == 0 )
  db.CodeFirst.InitTables<S7DataPoint>();db.CodeFirst.InitTables<ProtocolLog>();
  db.CodeFirst.InitTables<SysSetting>();db.CodeFirst.InitTables<SysFileInfo>();
  db.CodeFirst.InitTables<InterfaceRequestConfig>();db.CodeFirst.InitTables<OpcUaDataPoint>();
+ db.CodeFirst.InitTables<ModbusDataPoint>();
 }
-db.CodeFirst.InitTables<ModbusDataPoint>();
+*/
+
 
 
 

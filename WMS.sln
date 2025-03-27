@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jobcoreModule", "jobcoreMod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webAppiTest", "webAppiTest\webAppiTest.csproj", "{E47D8A48-325E-4BC0-B97B-0FCD7B7CA221}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wmsModule", "wmsModule\wmsModule.csproj", "{9C2DF075-332F-4CCA-96F9-110764B0FCA3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{E47D8A48-325E-4BC0-B97B-0FCD7B7CA221}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E47D8A48-325E-4BC0-B97B-0FCD7B7CA221}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E47D8A48-325E-4BC0-B97B-0FCD7B7CA221}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C2DF075-332F-4CCA-96F9-110764B0FCA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C2DF075-332F-4CCA-96F9-110764B0FCA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C2DF075-332F-4CCA-96F9-110764B0FCA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C2DF075-332F-4CCA-96F9-110764B0FCA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
