@@ -1,5 +1,5 @@
 <script setup>
-import {reactive, ref, onMounted, defineProps} from 'vue';
+import {reactive, ref, onMounted} from 'vue';
 import {useRouter} from "vue-router";
 import {
   AddOrUpdateOpcUa, GetOpcUaDetails,
@@ -33,7 +33,7 @@ const point = reactive({
   hardwareType : 0,
 
 })
-const accessTypes = [ {'label': 'S', 'value': 's' }, {'label': 'I', 'value': 'i' }, {'label': 'G', 'value': 'g' },  ]
+const accessTypes = [ {'label': 's', 'value': 's' }, {'label': 'i', 'value': 'i' }, {'label': 'g', 'value': 'g' },  ]
 const dataTypes = [
    {'label': 'bool', 'value': 'bool' },
   {'label': 'string', 'value': 'string' },
@@ -156,7 +156,7 @@ const Refresh = () => {
       <br/>
       <a-flex class="gutter-box"  vertical >
         <span style="font-weight: bold;">Endpoint</span>
-        <a-input placeholder="请输入Endpoint" v-model:value="point.endpoint" :disabled="disabled"  />
+        <a-input placeholder="请输入Endpoint"  v-model:value="point.endpoint" :disabled="disabled"  />
       </a-flex>
       <br/>
       <a-flex class="gutter-box"  vertical >
@@ -240,7 +240,7 @@ const Refresh = () => {
 
 <style scoped>
 .gutter-box{
-  width: 180px;
+  width: 280px;
 }
 .error{
   font-weight: bold;width: 200px;color: red;margin-left: 20px;

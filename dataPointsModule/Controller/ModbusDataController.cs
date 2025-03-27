@@ -59,7 +59,7 @@ public class ModbusDataController : ControllerBase
     }
     
     [HttpPost]
-    public FileResult export([FromBody] ModbusDataQuery query)
+    public IActionResult export([FromBody] ModbusDataQuery query)
     {
         return _modbusDataBll.ExportExcel(query);
     }

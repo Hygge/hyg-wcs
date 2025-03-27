@@ -104,7 +104,7 @@ public class OpcUaManager : ManagerAbstract<OpcUaDataPoint>, IOpcUaManager
         }
         catch (Exception ex)
         {
-            logger.LogError($"OpcUa协议在线plc连接获取失败，原因：{ex.Message}");
+            logger.LogError(ex, $"OpcUa协议在线plc连接获取失败，原因：{ex.Message}");
         }
         return null;
     }
@@ -117,7 +117,7 @@ public class OpcUaManager : ManagerAbstract<OpcUaDataPoint>, IOpcUaManager
         }
         catch (Exception ex)
         {
-            logger.LogError($"非法opcua endpoint， 原因：{ex.Message}");
+            logger.LogError(ex, $"非法opcua endpoint， 原因：{ex.Message}");
         }
 
         return string.Empty;

@@ -31,11 +31,11 @@ namespace infrastructure.Filters
                 case BusinessException:
                     var h = context.Exception as BusinessException;
                     context.Result = new ObjectResult(ApiResult.failed(h.code, h.message));
-                    _logger.LogError(h.message);
+                    _logger.LogError(context.Exception, h.message);
                     break;
                 default:
                     context.Result = new ObjectResult(ApiResult.failed(500, context.Exception.Message));
-                    _logger.LogError(context.Exception.Message);
+                    _logger.LogError(context.Exception, context.Exception.Message);
                     break;
             }
 
@@ -50,11 +50,11 @@ namespace infrastructure.Filters
                 case BusinessException:
                     var h = context.Exception as BusinessException;
                     context.Result = new ObjectResult(ApiResult.failed(h.code, h.message));
-                    _logger.LogError(h.message);
+                    _logger.LogError(context.Exception, h.message);
                     break;
                 default:
                     context.Result = new ObjectResult(ApiResult.failed(500, context.Exception.Message));
-                    _logger.LogError(context.Exception.Message);
+                    _logger.LogError(context.Exception, context.Exception.Message);
                     break;
             }
         }

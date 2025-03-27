@@ -44,7 +44,7 @@ public class ModbusDataDal : IModbusDataDal
     public void Delete(List<long> ids)
     {
         using var db = _dbClientFactory.GetSqlSugarClient();
-        db.Deleteable<ModbusDataPoint>().In(ids);
+        db.Deleteable<ModbusDataPoint>().In(ids).ExecuteCommand();
     }
 
     public ModbusDataPoint SelectById(long id)
@@ -83,5 +83,11 @@ public class ModbusDataDal : IModbusDataDal
                 format = item.format,
                 remark = item.remark
             }).ToList();
+    }
+
+    public void Update(ModbusDataPoint point)
+    {
+        using var db = _dbClientFactory.GetSqlSugarClient();
+        db.Updateable(point).ExecuteCommand();
     }
 }

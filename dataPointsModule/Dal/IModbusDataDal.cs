@@ -22,5 +22,7 @@ public interface IModbusDataDal
 
     List<ModbusPointDto> SelectList(ModbusDataQuery query);
 
+    void Update(ModbusDataPoint point);
+
 
 }

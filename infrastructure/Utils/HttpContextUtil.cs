@@ -40,10 +40,11 @@ namespace infrastructure.Utils
             {
                 Dictionary<string, string> qs = new();
                 foreach (var queryKey in query.Keys)
-                {
                     qs.Add(queryKey, query[queryKey]);
-                }
-                dictionary.Add("Query", JsonConvert.SerializeObject(qs));
+                
+
+                return JsonConvert.SerializeObject(qs);
+                // dictionary.Add("Query", JsonConvert.SerializeObject(qs));
             }
             if (contentType != null && contentType.Contains("multipart/form-data"))
             {
@@ -51,9 +52,9 @@ namespace infrastructure.Utils
                 {
                     var form = context.Request.Form;
                     if (form.Count > 0)
-                    {
-                        dictionary.Add("Form", JsonConvert.SerializeObject(context.Request.Form));
-                    }
+                        return JsonConvert.SerializeObject(context.Request.Form);
+                        // dictionary.Add("Form", JsonConvert.SerializeObject(context.Request.Form));
+                    
                 }
                 catch (Exception e)
                 {
@@ -67,12 +68,12 @@ namespace infrastructure.Utils
                 string body = await stream.ReadToEndAsync();
                 context.Request.Body.Position = 0;
                 if (!string.IsNullOrEmpty(body))
-                {
-                    dictionary.Add("body", body);
-                }
+                    // dictionary.Add("body", body);
+                    return body;
             }
             
-            return dictionary.Count > 0? JsonConvert.SerializeObject(dictionary) : string.Empty;
+            // return dictionary.Count > 0? JsonConvert.SerializeObject(dictionary) : string.Empty;
+            return string.Empty;
         }
 
 
@@ -89,9 +90,7 @@ namespace infrastructure.Utils
             var ips = addressList.Where(address => address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                 .Select(address => address.ToString()).ToArray();
             if (ips.Length == 1)
-            {
                 return ips.First();
-            }
             return ips.Where(address => !address.EndsWith(".1")).FirstOrDefault() ?? ips.FirstOrDefault();
         }
 

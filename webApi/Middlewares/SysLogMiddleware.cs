@@ -53,15 +53,13 @@ public class SysLogMiddleware
             await stream.CopyToAsync(origin);
 
             if (HttpCode.SUCCESS_CODE != context.Response.StatusCode)
-            {
                 sysLog.executeStatus = false;
-            }
+            
             sysLog.responseParam = Encoding.UTF8.GetString(stream.ToArray());
             ApiResult apiResult = JsonConvert.DeserializeObject<ApiResult>(sysLog.responseParam);
             if (HttpCode.SUCCESS_CODE != apiResult.code)
-            {
                 sysLog.executeStatus = false;
-            }
+            
         }
         catch (Exception e)
         {

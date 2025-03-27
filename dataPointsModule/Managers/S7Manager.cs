@@ -42,7 +42,7 @@ public class S7Manager : ManagerAbstract<S7DataPoint>, IS7Manager
         }
         catch (Exception ex)
         {
-            logger.LogError($"S7协议plc连接失败，IP：{t.ip}，原因：{ex.Message}");
+            logger.LogError(ex, $"S7协议plc连接失败，IP：{t.ip}，原因：{ex.Message}");
         }
     }
 
@@ -59,7 +59,7 @@ public class S7Manager : ManagerAbstract<S7DataPoint>, IS7Manager
         }
         catch (Exception ex)
         {
-            logger.LogError($"S7协议plc断开连接失败 IP：{t.ip}，原因：{ex.Message}");
+            logger.LogError(ex, $"S7协议plc断开连接失败 IP：{t.ip}，原因：{ex.Message}");
         }
     }
 
@@ -80,7 +80,7 @@ public class S7Manager : ManagerAbstract<S7DataPoint>, IS7Manager
         }
         catch (Exception ex) 
         {
-            logger.LogInformation($"S7协议plc正在重新连接异常，IP：{t.ip}，原因：{ex.Message}");
+            logger.LogInformation(ex, $"S7协议plc正在重新连接异常，IP：{t.ip}，原因：{ex.Message}");
         }
     }
 
@@ -103,7 +103,7 @@ public class S7Manager : ManagerAbstract<S7DataPoint>, IS7Manager
         }
         catch (Exception ex)
         {
-            logger.LogError($"S7协议在线plc连接获取失败，原因：{ex.Message}");
+            logger.LogError(ex, $"S7协议在线plc连接获取失败，原因：{ex.Message}");
         }
         return null;
     }
@@ -301,11 +301,14 @@ public class S7Manager : ManagerAbstract<S7DataPoint>, IS7Manager
     private byte[] strToBytes(string str, int length)
     {
         byte[] value = Encoding.ASCII.GetBytes(str);
-        byte[] head = new byte[2];
-        head[0] = Convert.ToByte(length);
-        head[1] = Convert.ToByte(value.Length);
-        value = head.Concat(value).ToArray();
-        return value;
+        List<byte> list = new List<byte>(length);
+        list.Add(Convert.ToByte(length));
+        list.Add(Convert.ToByte(value.Length));
+        list.AddRange(value.ToList());
+        int current = length - value.Length - 1;
+        for (int i = current; i < length; i++)
+            list.Add(0x00);
+        return list.ToArray();
     }
     /// <summary>
     /// 读取s7字节转字符串

@@ -1,10 +1,15 @@
 <script setup>
-import {onMounted, reactive, ref,} from 'vue';
+import {onMounted, reactive, ref, toRaw} from 'vue';
 import ModalNew from "@/components/modal/ModalNew.vue";
 import {DeleteOutlined} from "@ant-design/icons-vue";
-import {DelModbus, ExportModbus, GetModbusList, ImportModbus, S7Export, S7Import} from "@/api/dataPoint.js";
+import {
+  AddOrUpdateModbus,
+  DelModbus,
+  ExportModbus,
+  GetModbusList,
+  ImportModbus, readByIddModbus, writeByIdModbus,
+} from "@/api/dataPoint.js";
 import {message} from "ant-design-vue";
-import {useRouter} from "vue-router";
 import fileDownload from "js-file-download";
 defineOptions({
   name : 'modbus'
@@ -13,12 +18,37 @@ defineOptions({
 const open = ref(false);
 
 const handleOk = e => {
-  console.log(e);
-  open.value = false;
+  AddOrUpdateModbus(toRaw(point)).then( res => {
+    if(res.code == 200){
+      message.success(res.message)
+      open.value = false;
+      point.id = undefined
+      point.category = undefined
+      point.ip = undefined
+      point.stationNo = undefined
+      point.startAddress = undefined
+      point.dataType = undefined
+      point.format = undefined
+      point.readOnly = undefined
+      point.remark = undefined
+      point.length = undefined
+      point.name = undefined
+      point.port = undefined
+    }
+    else
+      message.error(res.message)
+  })
 };
 
 const cancel = ()=>{
   open.value = false;
+  showOper.value = false
+  operPoint.id = undefined
+  operPoint.name = undefined
+  operPoint.value = undefined
+  operPoint.dataType = undefined
+  operPoint.oper = undefined
+  operPoint.msg = undefined
 }
 
 onMounted(() => {
@@ -37,12 +67,25 @@ const reset = () => {
   startAddress.value = undefined
 }
 const point = reactive({
-
 })
 const disabled = ref(false);
 
 const varTypes = ref([
-
+  {label:"Bool", value:"Bool"},
+  {label:"Double", value:"Double"},
+  {label:"Float", value:"Float"},
+  {label:"Int16", value:"Int16"},
+  {label:"Int32", value:"Int32"},
+  {label:"Int64", value:"Int64"},
+  {label:"UInt16", value:"UInt16"},
+  {label:"UInt32", value:"UInt32"},
+  {label:"UInt64", value:"UInt64"},
+])
+const formats = ref([
+    {label:"ABCD", value:"ABCD"},
+    {label:"BADC", value:"BADC"},
+    {label:"CDAB", value:"CDAB"},
+    {label:"CDAB", value:"DCBA"},
 ])
 
 const search = (page) =>{
@@ -80,18 +123,18 @@ const paginationer = reactive({
 const selectRow = ref([])
 const dataSource = ref([ ])
 const columns= ref([
-  {    title: '名称',    dataIndex: 'name',    key: 'name',   align: 'center' , ellipsis: true,  show:true },
-  {    title: '类别',    dataIndex: 'category',    key: 'category',    align: 'center',  show:true  },
-  {    title: 'ip',    dataIndex: 'ip',    key: 'ip',    align: 'center',  show:true  },
-  {    title: '端口号',    dataIndex: 'port',    key: 'port',    align: 'center',  ellipsis: true,  show:false },
-  {    title: '从站',    dataIndex: 'stationNo',    key: 'stationNo',    align: 'center',    show:true },
-  {    title: '开始地址',    dataIndex: 'startAddress',    key: 'startAddress',    align: 'center',  show:false  },
-  {    title: '数据类型',    dataIndex: 'dataType',    key: 'dataType',    align: 'center',  show:true  },
-  {    title: '字节格式',    dataIndex: 'format',    key: 'format',    align: 'center',  ellipsis: true,   show:true  },
-  {    title: '长度',    dataIndex: 'length',    key: 'length',    align: 'center',  show:true  },
-  {    title: '是否只读',    dataIndex: 'readOnly',    key: 'readOnly',    align: 'center',  show:true  },
-  {    title: '备注',    dataIndex: 'remark',    key: 'remark',    align: 'center',  show:true  },
-  {    title: '其他',    dataIndex: 'hardwareType',    key: 'hardwareType',    align: 'center',  show:false  },
+  {    title: '名称',    dataIndex: 'name',    key: 'name',   align: 'center' , width:150, ellipsis: true, resizable: true, show:true },
+  {    title: '类别',    dataIndex: 'category',    key: 'category',    align: 'center', width:110, resizable: true,  show:true  },
+  {    title: 'ip',    dataIndex: 'ip',    key: 'ip',    align: 'center', width:160,  show:true  },
+  {    title: '端口号',    dataIndex: 'port',    key: 'port',    align: 'center', width:80,  ellipsis: true, resizable: true,  show:false },
+  {    title: '从站',    dataIndex: 'stationNo',    key: 'stationNo',    align: 'center', width:80,  resizable: true,   show:false },
+  {    title: '开始地址',    dataIndex: 'startAddress',    key: 'startAddress',    align: 'center', width:80,  resizable: true,  show:true  },
+  {    title: '数据类型',    dataIndex: 'dataType',    key: 'dataType',    align: 'center', width:80,  resizable: true,  show:true  },
+  {    title: '字节格式',    dataIndex: 'format',    key: 'format',    align: 'center',  width:80,  ellipsis: true, resizable: true,   show:true  },
+  {    title: '长度',    dataIndex: 'length',    key: 'length',    align: 'center', width:70,  resizable: true, show:true  },
+  {    title: '是否只读',    dataIndex: 'readOnly',    key: 'readOnly',    align: 'center', width:70,  resizable: true, show:true  },
+  {    title: '备注',    dataIndex: 'remark',    key: 'remark',    align: 'center', width:200, resizable: true,  show:true  },
+  {    title: '其他',    dataIndex: 'hardwareType',    key: 'hardwareType',    align: 'center', width:150,   show:false  },
 ])
 
 const columnsCheck = (checked,data,index) => {
@@ -137,22 +180,44 @@ const del = () =>{
   })
 }
 
-const editModal = ref(false)
+const type = ref('')
 const showM = (name) => {
+  type.value = 'update'
+  let p = selectRow.value[0]
+  point.id = p.id
+  point.category = p.category
+  point.ip = p.ip
+  point.stationNo = p.stationNo
+  point.startAddress = p.startAddress
+  point.dataType = p.dataType
+  point.format = p.format
+  point.readOnly = p.readOnly
+  point.remark = p.remark
+  point.length = p.length
+  point.name = p.name
+  point.port = p.port
 
+  open.value = true
+
+  disabled.value = true
 
 }
 
 const read = () =>{
-// readByIddModbus
-}
-const write = () =>{
-// writeByIdModbus
+  if (selectRow.value.length === 0){
+    message.warn("请选中数据点")
+    return ;
+  }
+  showOper.value = true
+  let data = selectRow.value[0]
+  operPoint.id = data.id
+  operPoint.name = data.name
+  operPoint.dataType = data.dataType
 }
 
-const route = useRouter()
 const add = () =>{
   open.value = true;
+  type.value = 'add'
 }
 
 const importExcel = (e) =>{
@@ -165,7 +230,7 @@ const importExcel = (e) =>{
       search(null)
     }
     else
-      message.error(res.msg)
+      message.error(res.message)
   })
 
 }
@@ -175,9 +240,66 @@ const exportExcel = () => {
     pageNum: paginationer.current, pageSize: paginationer.pageSize
   }
   ExportModbus(query).then(res => {
-    fileDownload(res, "Modbus数据点.xlsx");
+    fileDownload(res, "modbus数据点.xlsx");
   })
 }
+
+const readOnlys = [
+  {label: '否', value: false},
+  {label: '是', value: true},
+]
+const handleChangeSelect = (v) =>{
+  console.log(v)
+}
+
+const showOper = ref(false)
+
+const handleOper = ()=>{
+
+  if (operPoint.oper === 'read'){
+    let req = {id:operPoint.id};
+    readByIddModbus(req).then((res) => {
+      if (res.code === 200){
+        message.success("操作成功")
+        let data = res.data
+        if (data.state == true)
+          operPoint.value = data.value
+        else
+          operPoint.msg = data.msg
+      }
+      else
+        message.error(res.message)
+    })
+
+  }else {
+    let req = {id:operPoint.id, value: operPoint.value};
+    if(operPoint.value === ''){
+      message.warn("写入值不能为空")
+      return
+    }
+    writeByIdModbus(req).then((res) => {
+      if (res.code === 200){
+        message.success("操作成功")
+        let data = res.data
+        if (data.state == true)
+          operPoint.value = data.value
+        else
+          operPoint.msg = data.msg
+      }
+      else
+        message.error(res.message)
+    })
+  }
+
+}
+const operPoint = reactive({
+  id: undefined,
+  name: undefined,
+  dataType: undefined,
+  value: undefined,
+  oper: undefined,
+  msg: undefined,
+})
 
 </script>
 
@@ -233,10 +355,7 @@ const exportExcel = () => {
       新增
     </a-button>
     <a-button type="primary"  @click="read"  style="margin: 10px;">
-      读取
-    </a-button>
-    <a-button type="primary"  @click="write"  style="margin: 10px;">
-      写入
+      操作数据点
     </a-button>
     <a-upload
         :customRequest="importExcel"
@@ -272,9 +391,9 @@ const exportExcel = () => {
              :row-selection="rowSelection"  @change="handlePageChange"
              :pagination="paginationer"  @resizeColumn="handleResizeColumn" >
       <template #bodyCell="{ column, text, record }">
-        <template  v-if="column.dataIndex === 'operate'">
-          <a-tag v-if="record.operate === 0" color="#87d068">Read</a-tag>
-          <a-tag v-else color="#1677ff">Write</a-tag>
+        <template  v-if="column.dataIndex === 'readOnly'">
+          <a-tag v-if="record.readOnly === true" color="#87d068">是</a-tag>
+          <a-tag v-else color="#1677ff">否</a-tag>
         </template>
         <template v-else-if="column.dataIndex === 'name'">
           <a-tooltip placement="topLeft" :title="record.name" >{{record.name}}</a-tooltip>
@@ -289,7 +408,7 @@ const exportExcel = () => {
 
   </a-card>
 
-  <ModalNew :show="open" :handle-ok="handleOk" :cancel="cancel" title="新增数据点" >
+  <ModalNew :show="open" :handle-ok="handleOk" :cancel="cancel" title="保存数据点" >
     <template #content>
       <a-flex style="padding: 10px;"  gap="middle"  wrap="wrap" >
         <a-flex class="gutter-box" vertical >
@@ -298,53 +417,64 @@ const exportExcel = () => {
         </a-flex>
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">类别</span>
-          <a-input placeholder="请输入类别" v-model:value="point.category"  :disabled="disabled"  />
+          <a-input placeholder="请输入类别" v-model:value="point.category"   />
         </a-flex>
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">IP</span>
-          <a-input placeholder="请输入IP" v-model:value="point.ip" :disabled="disabled"  />
+          <a-input placeholder="请输入IP" v-model:value="point.ip"  />
         </a-flex>
 
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">端口</span>
-          <a-input placeholder="请输入端口"  v-model:value="point.port" :disabled="disabled"  />
+          <a-input placeholder="请输入端口"  v-model:value="point.port" />
         </a-flex>
 
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">从站地址</span>
-          <a-input placeholder="请输入从站地址" v-model:value="point.slot" :disabled="disabled"   />
+          <a-input placeholder="请输入从站地址" v-model:value="point.stationNo"    />
         </a-flex>
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">开始地址</span>
-          <a-input placeholder="请输入开始地址" v-model:value="point.startAddress"  :disabled="disabled"  />
+          <a-input placeholder="请输入开始地址" v-model:value="point.startAddress"   />
         </a-flex>
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">字节格式</span>
-          <a-input placeholder="请输入字节格式" v-model:value="point.format" :disabled="disabled"  />
+          <a-select
+              style="width: 200px;"
+              v-model:value="point.format"
+              size="Middle"
+              :options="formats"
+              @change="handleChangeSelect"
+          ></a-select>
         </a-flex>
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">数据类型</span>
           <a-select
+              style="width: 200px;"
               v-model:value="point.dataType"
               size="Middle"
               :options="varTypes"
-              :disabled="disabled"
           ></a-select>
         </a-flex>
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">长度</span>
-          <a-input-number placeholder="请输入长度" style="width: 180px;" v-model:value="point.length" :disabled="disabled"  />
+          <a-input-number placeholder="请输入长度" style="width: 200px;" v-model:value="point.length"   />
         </a-flex>
         <a-flex class="gutter-box"  vertical >
-          <span style="font-weight: bold;">是否只读</span>
+          <span style="font-weight: bold;">是否只读
+            <a-tooltip placement="right">
+              <template #title>
+                <span>DI只读</span>
+              </template>
+               <QuestionCircleOutlined  />
+            </a-tooltip>
+          </span>
           <a-select
               ref="select"
-              v-model:value="point.operate"
-              :disabled="disabled"
-              style="width: 180px;"
+              v-model:value="point.readOnly"
+              style="width: 200px;"
+              :options="readOnlys"
           >
-            <a-select-option :value="0">否</a-select-option>
-            <a-select-option :value="1">是</a-select-option>
           </a-select>
         </a-flex>
         <br/>
@@ -352,7 +482,7 @@ const exportExcel = () => {
         <br/>
         <a-flex class="gutter-box"  vertical >
           <span style="font-weight: bold;">备注</span>
-          <a-input placeholder="请输入备注" style="width: 300px;" v-model:value="point.remark"  :disabled="disabled"  />
+          <a-textarea  placeholder="请输入备注" style="width: 400px;" v-model:value="point.remark"  />
         </a-flex>
 
       </a-flex>
@@ -360,6 +490,40 @@ const exportExcel = () => {
     </template>
 
   </ModalNew>
+
+
+  <a-modal v-model:open="showOper" :footer="null" :cancel="cancel" title="操作数据点" >
+
+    <a-flex  style="margin-top: 20px;"  >
+      <span style="font-weight: bold;width: 70px;">名称</span>
+      <a-input style="margin-left: 20px;width: 300px;" placeholder="请输入名称" v-model:value="operPoint.name" :disabled="true"  />
+    </a-flex>
+    <a-flex  style="margin-top: 10px;"  >
+      <span style="font-weight: bold;width: 70px;">数据类型</span>
+      <a-input style="margin-left: 20px;width: 300px;" placeholder="请输入名称" v-model:value="operPoint.dataType" :disabled="true"   />
+    </a-flex>
+
+    <a-flex style="margin-top: 10px;" >
+      <span  style="font-weight: bold;width: 70px;">读写</span>
+      <a-select
+          ref="select"
+          v-model:value="operPoint.oper"
+          style="margin-left: 20px;width: 300px;"
+      >
+        <a-select-option value="wirte">写入</a-select-option>
+        <a-select-option value="read">读取</a-select-option>
+      </a-select>
+    </a-flex>
+    <a-flex style="margin-top: 10px;" >
+      <span style="font-weight: bold;width: 70px;">值</span>
+      <a-input  style="margin-left: 20px;width: 300px;" v-model:value="operPoint.value"   />
+    </a-flex>
+    <a-flex style="margin-top: 10px;" >
+      <span style="font-weight: bold;color: red;">{{ operPoint.msg }}</span>
+    </a-flex>
+
+    <a-button type="primary" @click="handleOper" style="margin-top:20px;margin-left: 20px;width: 300px;">确定</a-button>
+  </a-modal>
 </template>
 
 <style scoped>

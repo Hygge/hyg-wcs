@@ -17,7 +17,7 @@ export const AddOrUpdateModbus = (data)=>{
 export const DelModbus = (data)=>{
     return request({
         url: '/ModbusData/del',
-        method: 'post',
+        method: 'delete',
         data: data
     })
 }
@@ -32,7 +32,8 @@ export const ExportModbus = (data)=>{
     return request({
         url: '/ModbusData/export',
         method: 'post',
-        data: data
+        data: data,
+        responseType:'blob'
     })
 }
 export const writeByIdModbus = (data)=>{

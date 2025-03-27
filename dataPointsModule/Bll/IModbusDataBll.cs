@@ -33,7 +33,7 @@ public interface IModbusDataBll
     public DataPointDto WriteByName(string name, object value);
     public DataPointDto WriteById(long id, object value);
 
-    public FileResult ExportExcel(ModbusDataQuery query);
+    public FileStreamResult ExportExcel(ModbusDataQuery query);
 
     public void ImportExcel(IFormFile file);
     

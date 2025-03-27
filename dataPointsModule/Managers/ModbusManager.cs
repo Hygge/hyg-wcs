@@ -48,7 +48,7 @@ public class ModbusManager : ManagerAbstract<ModbusDataPoint>, IModbusManager
         }
         catch (Exception ex)
         {
-            logger.LogError($"Modbus连接失败，IP：{t.ip} port:{t.port}，原因：{ex.Message}");
+            logger.LogError(ex, $"Modbus连接失败，IP：{t.ip} port:{t.port}，原因：{ex.Message}");
         }
     }
 
@@ -91,7 +91,7 @@ public class ModbusManager : ManagerAbstract<ModbusDataPoint>, IModbusManager
         }
         catch (Exception ex) 
         {
-            logger.LogInformation($"Modbus正在重新连接异常，IP：{t.ip} port:{t.port}，原因：{ex.Message}");
+            logger.LogInformation(ex, "Modbus正在重新连接异常，IP：{t.ip} port:{t.port}，原因：{ex.Message}");
         }
     }
 
@@ -112,7 +112,7 @@ public class ModbusManager : ManagerAbstract<ModbusDataPoint>, IModbusManager
         }
         catch (Exception ex)
         {
-            logger.LogError($"Modbus连接获取失败，IP：{t.ip} port:{t.port}，原因：{ex.Message}");
+            logger.LogError(ex, $"Modbus连接获取失败，IP：{t.ip} port:{t.port}，原因：{ex.Message}");
         }
         return null;
     }
@@ -167,6 +167,7 @@ public class ModbusManager : ManagerAbstract<ModbusDataPoint>, IModbusManager
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, $"modbus读取数据失败，ip：{t.ip}，原因：{ex.Message}");
             return DataPointDto.failed(ex.Message);
         }
     }
@@ -218,6 +219,7 @@ public class ModbusManager : ManagerAbstract<ModbusDataPoint>, IModbusManager
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, $"modbus写入数据失败，ip：{t.ip}，原因：{ex.Message}");
             return DataPointDto.failed(ex.Message);
         }
     }
