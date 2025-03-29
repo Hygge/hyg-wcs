@@ -4,6 +4,7 @@ using adminModule.Bll;
 using domain.Pojo.sys;
 using domain.Result;
 using infrastructure.Attributes;
+using infrastructure.Context;
 using infrastructure.Utils;
 using Newtonsoft.Json;
 using Yitter.IdGenerator;
@@ -23,6 +24,14 @@ public class SysLogMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        string userId = HttpContextUtil.getUserId(context);
+        string userName = HttpContextUtil.getUserName(context);
+        // 初始化 AsyncLocal
+        RequestContext.Current = new RequestContextData
+        {
+            userId = string.IsNullOrEmpty(userId) ? null : long.Parse(userId),
+            userName = userName
+        };
     
         long start = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         var log = context.GetEndpoint()?.Metadata.GetMetadata<SysLogAttribute>();
@@ -39,7 +48,7 @@ public class SysLogMiddleware
         try
         {
             sysLog.id = YitIdHelper.NextId();
-            sysLog.operatorName = HttpContextUtil.getUserName(context);
+            sysLog.operatorName = userName;
             sysLog.responseParam = string.Empty;
             sysLog.reason = string.Empty;
             sysLog.requestParam = await HttpContextUtil.getRequestParams(context);
