@@ -91,6 +91,10 @@ public class OtherSystemsMiddleware
     /// <param name="sysLog"></param>
     private async Task ExceptionHandle(Exception e, HttpContext context, MemoryStream stream, OtherSysLog sysLog)
     {
+        // 重置原数据清空
+        stream.Seek(0, SeekOrigin.Begin);
+        stream.SetLength(0);
+        
         BusinessException exception = e as BusinessException;
         sysLog.executeStatus = false;
      
