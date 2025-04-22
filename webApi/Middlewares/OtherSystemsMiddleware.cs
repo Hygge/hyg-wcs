@@ -35,9 +35,7 @@ public class OtherSystemsMiddleware
             await _next(context);
             return;
         }
-        using Stream origin = context.Response.Body;
-        using MemoryStream stream = new();
-        context.Response.Body = stream;
+        MemoryStream stream = context.Response.Body as MemoryStream;
         OtherSysLog sysLog = new OtherSysLog();
         try
         {
@@ -56,10 +54,6 @@ public class OtherSystemsMiddleware
   
             await _next(context);
             
-          
-            stream.Position = 0;
-            await stream.CopyToAsync(origin);
-
             if (HttpCode.SUCCESS_CODE != context.Response.StatusCode)
                 sysLog.executeStatus = false;
             
@@ -72,9 +66,6 @@ public class OtherSystemsMiddleware
         catch (Exception e)
         {
             ExceptionHandle(e, context, stream, sysLog);
-            //重置流游标
-            stream.Position = 0;
-            await stream.CopyToAsync(origin);
         }
         long end = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         sysLog.executeTime = end - start;
