@@ -18,20 +18,19 @@ namespace adminModule.Bll.Impl
     public class SysUserBll : ISysUserBll
     {
 
-        private readonly DbClientFactory dbClientFactory;
+        private readonly ISqlSugarClient db;
         private readonly ILogger<SysUserBll> _logger;
         private readonly IServiceProvider serviceProvider;
 
         public SysUserBll(ILogger<SysUserBll> logger, DbClientFactory dbClientFactory, IServiceProvider serviceProvider)
         {
-            this.dbClientFactory = dbClientFactory;
+            this.db = dbClientFactory.db;
             this._logger = logger;
             this.serviceProvider = serviceProvider;
         }
 
         public long Login(string userName, string password)
         {
-            using var db = dbClientFactory.GetSqlSugarClient();
             SysUser? user1 = db.Queryable<SysUser>()
                 .Single(item => item.userName.Equals(userName) && item.password.Equals(EncryptUtil.SHA256Encrypt(password)));
             if (null == user1)
@@ -45,7 +44,6 @@ namespace adminModule.Bll.Impl
 
         public void Add(SysUserDto userDto, string createdBy)
         {
-            using var db = dbClientFactory.GetSqlSugarClient();
             SysUser? sysUser = db.Queryable<SysUser>().Where(x => x.userName.Equals(userDto.userName)).Single();
             if (null != sysUser)
             {
@@ -70,8 +68,6 @@ namespace adminModule.Bll.Impl
 
         public Pager<SysUserVo> GetList(Dictionary<string, object> map)
         {
-            using var db = dbClientFactory.GetSqlSugarClient();
-
             Pager<SysUserVo> pager = new Pager<SysUserVo>((int)map["pageNumber"], (int)map["pageSize"]);
 
             var exp = Expressionable.Create<SysUser>();
@@ -126,14 +122,12 @@ namespace adminModule.Bll.Impl
 
         public void Delete(long id)
         {
-            using var db = dbClientFactory.GetSqlSugarClient();
             db.Deleteable<SysUser>(x => x.id == id).ExecuteCommand();
         }
 
 
         public void Update(SysUserDto sysUserDto)
         {
-            using var db = dbClientFactory.GetSqlSugarClient();
             SysUser? sysUser = db.Queryable<SysUser>().Where(u => u.id == sysUserDto.id).Single();
             if (sysUser == null)
             {
@@ -159,7 +153,6 @@ namespace adminModule.Bll.Impl
 
         public void UpdatePassword(long userId, string? password, string newPassword)
         {
-            using var db = dbClientFactory.GetSqlSugarClient();
             SysUser sysUser = db.Queryable<SysUser>().Where(u => u.id == userId).Single();
             if (sysUser == null)
             {
@@ -178,7 +171,6 @@ namespace adminModule.Bll.Impl
 
         public UserInfo GetInfo(long id)
         {
-            using var db = dbClientFactory.GetSqlSugarClient();
               SysUser user = db.Queryable<SysUser>().Where(x => x.id == id).Single();
             if (null == user)
             {

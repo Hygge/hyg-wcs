@@ -8,20 +8,19 @@ using SqlSugar;
 
 namespace adminModule.Dal.Impl;
 
-[Service(ServiceLifetime.Singleton)]
+[Service]
 public class SysFileInfoDal : ISysFileInfoDal
 {
 
-    private readonly DbClientFactory _dbClientFactory;
+    private readonly ISqlSugarClient db;
     public SysFileInfoDal(DbClientFactory dbClientFactory)
     {
-        _dbClientFactory = dbClientFactory;
+        db = dbClientFactory.db;
     }
     
     
     public void Insert(SysFileInfo entity)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Insertable<SysFileInfo>(entity).ExecuteCommand();
     }
 
@@ -31,7 +30,7 @@ public class SysFileInfoDal : ISysFileInfoDal
         var exp = Expressionable.Create<SysFileInfo>();
         exp.AndIF(true, s => s.isDelete == true);
         exp.AndIF(type != null, f => f.fileType == (FileTypeEnum)type);
-        using var db = _dbClientFactory.GetSqlSugarClient();
+
         pager.rows = db.Queryable<SysFileInfo>().Where(exp.ToExpression()).OrderByDescending(d => d.createdTime)
             .Skip(pager.getSkip()).Take(pager.pageSize).ToList();
         pager.total = db.Queryable<SysFileInfo>().Where(exp.ToExpression()).Count();

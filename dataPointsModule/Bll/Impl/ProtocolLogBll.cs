@@ -12,17 +12,17 @@ namespace dataPointsModule.Bll.Impl;
 [Service]
 public class ProtocolLogBll : IProtocolLogBll
 {
-    private readonly ILogger<ProtocolLogBll> _logger;
-    private readonly DbClientFactory _dbClientFactory = ServiceUtil.GetRequiredService<DbClientFactory>() ;
+    private readonly ILogger<IProtocolLogBll> _logger;
+    private readonly ISqlSugarClient db;
 
-    public ProtocolLogBll(ILogger<ProtocolLogBll> logger)
+    public ProtocolLogBll(ILogger<IProtocolLogBll> _logger, DbClientFactory _dbClientFactory)
     {
-        this._logger = logger;
+        this._logger = _logger;
+        this.db = _dbClientFactory.db;
     }
 
     public void Save(ProtocolLog protocolLog)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Insertable<ProtocolLog>(protocolLog).ExecuteCommand();
     }
 
@@ -32,7 +32,6 @@ public class ProtocolLogBll : IProtocolLogBll
         {
             return;
         }
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Deleteable<ProtocolLog>().In(ids).ExecuteCommand();
 
     }
@@ -48,7 +47,6 @@ public class ProtocolLogBll : IProtocolLogBll
         exp.AndIF(query.startTime != null, x => x.endTime >= query.startTime);
         exp.AndIF(query.endTime != null, x => x.endTime <= query.endTime);
 
-        using var db = _dbClientFactory.GetSqlSugarClient();
         List<ProtocolLog> list = db.Queryable<ProtocolLog>().Where(exp.ToExpression())
             .OrderByDescending(x => x.endTime)
             .Skip(pager.getSkip()).Take(pager.pageSize)

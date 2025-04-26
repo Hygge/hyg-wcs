@@ -3,31 +3,32 @@ using infrastructure.Attributes;
 using infrastructure.Db;
 using infrastructure.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using SqlSugar;
 
 namespace otherSystemModule.Dal.Impl;
 
 
-[Service(ServiceLifetime.Singleton)]
+[Service]
 public class InterfaceRequestConfigDal : IInterfaceRequestConfigDal
 {
-    private DbClientFactory dbClientFactory => ServiceUtil.GetRequiredService<DbClientFactory>();
-
+    private readonly ISqlSugarClient db;
+    public InterfaceRequestConfigDal(DbClientFactory dbClientFactory)
+    {
+        this.db = dbClientFactory.db;
+    }
 
     public void Insert(InterfaceRequestConfig config)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Insertable(config).ExecuteCommand();
     }
 
     public void Update(InterfaceRequestConfig config)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Updateable(config).ExecuteCommand();
     }
 
     public void Delete(InterfaceRequestConfig config)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Deleteable(config).ExecuteCommand();
     }
 
@@ -37,13 +38,11 @@ public class InterfaceRequestConfigDal : IInterfaceRequestConfigDal
         {
             return;
         }
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Deleteable<InterfaceRequestConfig>().In(ids).ExecuteCommand();
     }
 
     public InterfaceRequestConfig SelectById(long id)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         return db.Queryable<InterfaceRequestConfig>().Single(i => i.configId == id && i.isDelete == false);
     }
 }

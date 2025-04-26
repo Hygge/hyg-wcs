@@ -12,20 +12,18 @@ namespace otherSystemModule.Bll.Impl;
 [Service]
 public class OtherSysLogBll : IOtherSysLogBll
 {
-    private readonly ILogger<OtherSysLogBll> _logger;
-    private readonly DbClientFactory _dbClientFactory;
+    private readonly ILogger<IOtherSysLogBll> _logger;
+    private readonly ISqlSugarClient db;
 
-    public OtherSysLogBll(ILogger<OtherSysLogBll> _logger, DbClientFactory _dbClientFactory)
+    public OtherSysLogBll(ILogger<IOtherSysLogBll> _logger, DbClientFactory _dbClientFactory)
     {
         this._logger = _logger;
-        this._dbClientFactory = _dbClientFactory;
+        this.db = _dbClientFactory.db;
     }
     
     
     public void Save(OtherSysLog otherSysLog)
     {
-
-        using var db = _dbClientFactory.GetSqlSugarClient();
         otherSysLog.id = YitIdHelper.NextId();
         db.Insertable<OtherSysLog>(otherSysLog).ExecuteCommand();
 
@@ -37,7 +35,6 @@ public class OtherSysLogBll : IOtherSysLogBll
         {
             return;
         }
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Deleteable<OtherSysLog>().In(ids).ExecuteCommand();
     }
 
@@ -45,7 +42,6 @@ public class OtherSysLogBll : IOtherSysLogBll
         int pageSize)
     {
         Pager<OtherSysLog> pager = new(pageNum, pageSize);
-        using var db = _dbClientFactory.GetSqlSugarClient();
         var exp = Expressionable.Create<OtherSysLog>();
         exp.AndIF(!string.IsNullOrEmpty(path), x => x.sysName.Contains(path));
         exp.AndIF(!string.IsNullOrEmpty(sysName), x => x.sysName.Contains(sysName));

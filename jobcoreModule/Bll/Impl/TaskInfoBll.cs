@@ -22,7 +22,7 @@ namespace jobcoreModule.Bll.Impl;
 public class TaskInfoBll : ITaskInfoBll
 {
     private readonly ILogger<TaskInfoBll> _logger;
-    private readonly DbClientFactory _dbClientFactory;
+    private readonly ISqlSugarClient db;
     private readonly JobCoreContext jobCoreContext;
     private readonly ITaskTemplate taskTemplate;
 
@@ -30,13 +30,12 @@ public class TaskInfoBll : ITaskInfoBll
         ITaskTemplate taskTemplate)
     {
         this._logger = logger;
-        this._dbClientFactory = dbClientFactory;
+        this.db = dbClientFactory.db;
         this.jobCoreContext = jobCoreContext;
     }
     
     public void Initialized()
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         List<TaskInfo> list = db.Queryable<TaskInfo>().Where(x => x.executeStatus == TaskState.Started 
                                             || x.executeStatus == TaskState.Pause).ToList();
         list.ForEach(item =>
@@ -49,8 +48,6 @@ public class TaskInfoBll : ITaskInfoBll
     
     public void Save(TaskInfoDto dto)
     {
-        
-        using var db = _dbClientFactory.GetSqlSugarClient();
         TaskInfo taskInfo = new();
         taskInfo.id = CreatedTaskId();
         taskInfo.taskName = dto.taskName;
@@ -73,7 +70,6 @@ public class TaskInfoBll : ITaskInfoBll
         exp.AndIF(query.startTime != null, x => x.createTime >= query.startTime);
         exp.AndIF(query.endTime != null, x => x.createTime <= query.endTime);
 
-        using var db = _dbClientFactory.GetSqlSugarClient();
         pager.rows = db.Queryable<TaskInfo>().Where(exp.ToExpression()).OrderByDescending(x => x.createTime)
             .Skip(pager.getSkip())
             .Take(pager.pageSize).ToList();
@@ -83,7 +79,6 @@ public class TaskInfoBll : ITaskInfoBll
 
     public List<TaskInfo> GetListByTaskState(TaskState executeStatus)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         return db.Queryable<TaskInfo>().Where(x => x.taskType == (int)executeStatus).ToList();
     }
 
@@ -93,19 +88,16 @@ public class TaskInfoBll : ITaskInfoBll
         {
             return;
         }
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Deleteable<TaskInfo>().In(ids).ExecuteCommand();
     }
 
     public void Update(TaskInfo taskInfo)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
-        db.Updateable(taskInfo);
+        db.Updateable(taskInfo).ExecuteCommand();
     }
 
     public void Scheduling(string taskId, TaskState state)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         TaskInfo? taskInfo = db.Queryable<TaskInfo>().Where(x => x.id.Equals(taskId)).First();
         if (taskInfo != null)
         {
@@ -186,7 +178,6 @@ public class TaskInfoBll : ITaskInfoBll
     /// <param name="taskId"></param>
     private void Running(string taskId)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         TaskInfo taskInfo = db.Queryable<TaskInfo>().First(x => x.id.Equals(taskId));
 
         switch (taskInfo.taskType)

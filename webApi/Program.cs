@@ -10,14 +10,11 @@ using Newtonsoft.Json;
 using System.Text;
 using AspectCore.Extensions.DependencyInjection;
 using dataPointsModule;
-using domain.Pojo.config;
 using domain.Pojo.ortherSystems;
 using domain.Pojo.protocol;
 using domain.Pojo.quartz;
 using infrastructure.Utils;
 using jobcoreModule;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using otherSystemModule;
 using quartzModeule;
 using webApi.Authorizations;
@@ -28,10 +25,10 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 //在Program 只需要配置这一句就行 aop生效
 builder.Host.UseServiceProviderFactory(new DynamicProxyServiceProviderFactory());
+
+
 builder.AddInfrastructure();
-
 builder.Services.AddAdmin();
-
 
 #region 配置登录认证、授权
 
@@ -92,7 +89,6 @@ builder.Services.AddJobCoreModule();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -103,7 +99,6 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors();
 
-
 // 启用身份验证和授权中间件
 app.UseAuthentication();
 app.UseAuthorization();
@@ -113,14 +108,13 @@ app.UseMiddleware<SysLogMiddleware>();
 app.UseMiddleware<OtherSystemsMiddleware>();
 app.UseEndpoints(e => e.MapControllers());
 
-
 app.UseStaticFilesInitPath();
 app.UseServiceProvider();
 
 // 初始化数据库表
 
-
-using var db = app.Services.GetService<DbClientFactory>().GetSqlSugarClient();
+/*
+using var db = app.Services.GetService<DbClientFactory>().db;
 var tables = db.DbMaintenance.GetTableInfoList(false);//true 走缓存 false不走缓存
 if (tables == null || tables.Count == 0 )
 {
@@ -132,9 +126,9 @@ if (tables == null || tables.Count == 0 )
  db.CodeFirst.InitTables<S7DataPoint>();db.CodeFirst.InitTables<ProtocolLog>();
  db.CodeFirst.InitTables<SysSetting>();db.CodeFirst.InitTables<SysFileInfo>();
  db.CodeFirst.InitTables<InterfaceRequestConfig>();db.CodeFirst.InitTables<OpcUaDataPoint>();
+ db.CodeFirst.InitTables<ModbusDataPoint>();
 }
-db.CodeFirst.InitTables<ModbusDataPoint>();
-
+*/
 
 
 // 数据点模块初始化

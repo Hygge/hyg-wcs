@@ -4,31 +4,29 @@ using infrastructure.Attributes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
 using SqlSugar;
 
 
 
 namespace infrastructure.Db;
 
-[Component(ServiceLifetime.Singleton)]
+[Component(ServiceLifetime.Scoped)]
 public class DbClientFactory
 {
-    private string ConnectionStringSettings;
+    public readonly ISqlSugarClient db;
     private readonly ILogger<DbClientFactory> _logger;
     public DbClientFactory(IConfiguration configuration, ILogger<DbClientFactory> _logger) 
     {
-        this.ConnectionStringSettings = configuration.GetConnectionString("pgsql");
         this._logger = _logger;
+        this.db = GetSqlSugarClient(configuration.GetConnectionString("pgsql"));
     }
 
-    public  ISqlSugarClient GetSqlSugarClient()
+    public ISqlSugarClient GetSqlSugarClient(string connectionStringSettings)
     {
         var db = new SqlSugarClient(new ConnectionConfig()
         {
             DbType = DbType.PostgreSQL,
-            ConnectionString = ConnectionStringSettings,
+            ConnectionString = connectionStringSettings,
             IsAutoCloseConnection = true,
             ConfigureExternalServices = new ConfigureExternalServices()
             {
@@ -133,7 +131,5 @@ public class DbClientFactory
         return sb.ToString();
     }
     
-    
-
 }
 

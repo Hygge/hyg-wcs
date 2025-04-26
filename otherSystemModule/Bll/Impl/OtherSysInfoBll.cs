@@ -16,11 +16,11 @@ public class OtherSysInfoBll : IOtherSysInfoBll
 {
 
     private readonly ILogger<OtherSysInfoBll> _logger;
-    private readonly DbClientFactory _dbClientFactory;
+    private readonly ISqlSugarClient db;
     
     public OtherSysInfoBll(DbClientFactory dbClientFactory, ILogger<OtherSysInfoBll> _logger)
     {
-        this._dbClientFactory = dbClientFactory;
+        this.db = dbClientFactory.db;
         this._logger = _logger;
     }
     
@@ -30,7 +30,6 @@ public class OtherSysInfoBll : IOtherSysInfoBll
         {
             throw new BusinessException(424, "系统名称不能为空");
         }
-        using var db = _dbClientFactory.GetSqlSugarClient();
         OtherSysInfo? o = db.Queryable<OtherSysInfo>().First(x => x.name.Contains(otherSysInfo.name));
         if (null != o)
         {
@@ -47,7 +46,6 @@ public class OtherSysInfoBll : IOtherSysInfoBll
             otherSysLog.sysName = "未知系统";
             throw new BusinessException(401, "未知系统请联系管理员配置");
         }
-        using var db = _dbClientFactory.GetSqlSugarClient();
         OtherSysInfo? otherSysInfo = db.Queryable<OtherSysInfo>().Single(x => x.appKey.Equals(appKey));
         if (otherSysInfo == null)
         {
@@ -64,7 +62,6 @@ public class OtherSysInfoBll : IOtherSysInfoBll
 
     public void BuildAppkey(long id)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         OtherSysInfo? otherSysInfo = db.Queryable<OtherSysInfo>().Single(x => x.id == id);
         if (otherSysInfo == null)
         {
@@ -80,14 +77,12 @@ public class OtherSysInfoBll : IOtherSysInfoBll
         {
             return;
         }
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Deleteable<OtherSysInfo>().In(ids).ExecuteCommand();
 
     }
 
     public void Update(OtherSysInfo otherSysInfo)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
        OtherSysInfo? o = db.Queryable<OtherSysInfo>().Single(x => x.id == otherSysInfo.id);
        if (o == null)
        {
@@ -102,7 +97,6 @@ public class OtherSysInfoBll : IOtherSysInfoBll
     public Pager<OtherSysInfo> GetList(string? sysName, DateTime? startTime, DateTime? endTime, int pageNum, int pageSize)
     {
         Pager<OtherSysInfo> pager = new(pageNum, pageSize);
-        using var db = _dbClientFactory.GetSqlSugarClient();
         var exp = Expressionable.Create<OtherSysInfo>();
         exp.AndIF(!string.IsNullOrEmpty(sysName), x => x.name.Contains(sysName));
         exp.AndIF( null != startTime, x => x.createdTime >= startTime);

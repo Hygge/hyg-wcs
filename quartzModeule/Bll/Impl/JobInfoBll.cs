@@ -17,22 +17,20 @@ public class JobInfoBll : IJobInfoBll
 {
 
     private readonly IScheduler scheduler;
-    private readonly DbClientFactory _dbClientFactory;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ISqlSugarClient db;
     
     public JobInfoBll(ISchedulerFactory schedulerFactory, DbClientFactory _dbClientFactory, IServiceProvider _serviceProvider)
     {
         this._serviceProvider = _serviceProvider;
         this.scheduler = schedulerFactory.GetScheduler().Result;
-        this._dbClientFactory = _dbClientFactory;
+        this.db = _dbClientFactory.db;
     }
     
     
     public async Task Save(JobInfo jobInfo)
     {
         jobInfo.id = YitIdHelper.NextId();
-        using var db = _dbClientFactory.GetSqlSugarClient();
-
          JobInfo jobInfo1 = db.Queryable<JobInfo>().Where(x => x.jobName.Equals(jobInfo.jobName) 
                                             || x.jobKey.Equals(jobInfo.jobKey)).Single();
          if (null != jobInfo1)
@@ -48,7 +46,6 @@ public class JobInfoBll : IJobInfoBll
 
     public async Task Update(JobInfo jobInfo)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         JobInfo jobInfo1 = db.Queryable<JobInfo>().Where(x => x.id == jobInfo.id).Single();
         if (null == jobInfo1)
         {
@@ -80,7 +77,6 @@ public class JobInfoBll : IJobInfoBll
 
     public async Task RuningJob(long id)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         JobInfo jobInfo = db.Queryable<JobInfo>().Single(x => x.id == id);
         if (jobInfo == null)
         {
@@ -96,7 +92,6 @@ public class JobInfoBll : IJobInfoBll
 
     public async Task Delete(List<long> ids)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         foreach (var id in ids)
         {
             JobInfo jobInfo = db.Queryable<JobInfo>().Single(x => x.id == id);
@@ -114,7 +109,6 @@ public class JobInfoBll : IJobInfoBll
 
     public async Task PausedJob(long id)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         var jobInfo = db.Queryable<JobInfo>().Single( x => x.id == id);
         if (null == jobInfo)
         {
@@ -136,7 +130,6 @@ public class JobInfoBll : IJobInfoBll
         expr.AndIF(!string.IsNullOrEmpty(category), j => j.category.Contains(category));
         expr.AndIF(null != status , j => j.status == status);
         
-        using var db = _dbClientFactory.GetSqlSugarClient();
         pager.rows = await db.Queryable<JobInfo>().Where(expr.ToExpression()).Skip(pager.getSkip()).Take(pager.pageSize).ToListAsync();
         pager.total = await db.Queryable<JobInfo>().Where(expr.ToExpression()).CountAsync();
 
@@ -149,7 +142,6 @@ public class JobInfoBll : IJobInfoBll
     /// </summary>
     public void InitJobs()
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         List<JobInfo> list = db.Queryable<JobInfo>().ToList();
         list.ForEach(item =>
         {

@@ -2,7 +2,7 @@
 using infrastructure.Attributes;
 using infrastructure.Db;
 using infrastructure.Utils;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SqlSugar;
 
 namespace adminModule.Bll.Impl;
@@ -11,17 +11,19 @@ namespace adminModule.Bll.Impl;
 [Service]
 public class SysLogBll : ISysLogBll
 {
-    private readonly DbClientFactory _dbClientFactory;
+    private readonly ILogger<ISysLogBll> _logger;
+    private readonly ISqlSugarClient db;
 
-    public SysLogBll(DbClientFactory dbClientFactory)
+    public SysLogBll(ILogger<ISysLogBll> logger, DbClientFactory _dbClientFactory)
     {
-        this._dbClientFactory = dbClientFactory;
+        this._logger = logger;
+        this.db = _dbClientFactory.db;
     }
+
     
     
     public void Save(SysLog log)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Insertable(log).ExecuteCommand();
     }
 
@@ -29,7 +31,6 @@ public class SysLogBll : ISysLogBll
         int pageNum, int pageSize)
     {
         Pager<SysLog> pager = new(pageNum, pageSize);
-        using var db = _dbClientFactory.GetSqlSugarClient();
         var exp = Expressionable.Create<SysLog>();
         exp.AndIF(!string.IsNullOrEmpty(path), x => x.path.Contains(path));
         exp.AndIF(!string.IsNullOrEmpty(operation), x => x.operation.Contains(operation));
@@ -51,7 +52,6 @@ public class SysLogBll : ISysLogBll
         {
             return;
         }
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Deleteable<SysLog>().In(ids).ExecuteCommand();
     }
 }

@@ -4,6 +4,7 @@ using infrastructure.Db;
 using infrastructure.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SqlSugar;
 using Yitter.IdGenerator;
 
 namespace jobcoreModule.Bll.Impl;
@@ -13,29 +14,27 @@ namespace jobcoreModule.Bll.Impl;
 public class BlockLogBll : IBlockLogBll
 {
     
-    private readonly ILogger<TaskInfoBll> _logger;
-    private readonly DbClientFactory _dbClientFactory = ServiceUtil.GetRequiredService<DbClientFactory>() ;
+    private readonly ILogger<IBlockLogBll> _logger;
+    private readonly ISqlSugarClient db;
 
-    public BlockLogBll(ILogger<TaskInfoBll> logger)
+    public BlockLogBll(ILogger<IBlockLogBll> _logger, DbClientFactory _dbClientFactory)
     {
-        this._logger = logger;
+        this._logger = _logger;
+        this.db = _dbClientFactory.db;
     }
     
     public void Save(BlockLog log)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Insertable<BlockLog>(log).ExecuteCommand();
     }
 
     public void Update(BlockLog log)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         db.Updateable(log).ExecuteCommand();
     }
 
     public BlockLog GetByTaskIdAndBId(string taskId, string bId)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         return db.Queryable<BlockLog>().First(x => x.taskId.Equals(taskId) && x.bId.Equals(bId));
     }
 }

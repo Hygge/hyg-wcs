@@ -7,6 +7,7 @@ using infrastructure.Db;
 using infrastructure.Exceptions;
 using infrastructure.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SqlSugar;
 
 namespace dataPointsModule.Dal.Impl;
@@ -15,48 +16,47 @@ namespace dataPointsModule.Dal.Impl;
 [Service]
 public class OpcUaDataPointDal : IOpcUaDataPointDal
 {
-    private DbClientFactory dbClientFactory => ServiceUtil.GetRequiredService<DbClientFactory>();
+    private readonly ILogger<IOpcUaDataPointDal> _logger;
+    private readonly ISqlSugarClient db;
 
+    public OpcUaDataPointDal(ILogger<IOpcUaDataPointDal> _logger, DbClientFactory _dbClientFactory)
+    {
+        this._logger = _logger;
+        this.db = _dbClientFactory.db;
+    }
 
     public void DeleteBatchById(List<long> ids)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Deleteable<OpcUaDataPoint>().In(ids).ExecuteCommand();
     }
 
     public void Insert(OpcUaDataPoint opcUaDataPoint)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Insertable(opcUaDataPoint).ExecuteCommand();
     }
 
     public void Update(OpcUaDataPoint opcUaDataPoint)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Updateable(opcUaDataPoint).ExecuteCommand();
     }
 
     public void DeleteById(long opcUaDataPointId)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Deleteable<OpcUaDataPoint>().Where( o => o.id == opcUaDataPointId).ExecuteCommand();
     }
 
     public OpcUaDataPoint SelectById(long opcUaDataPointId)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         return db.Queryable<OpcUaDataPoint>().Single(o => o.id == opcUaDataPointId);
     }
 
     public OpcUaDataPoint SelectByNameAndOperate(string name, OperateEnum operate)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         return db.Queryable<OpcUaDataPoint>().Where(o => o.name.Equals(name) && o.operate == operate).Single();
     }
 
     public Pager<OpcUaDataPoint> SelectList(OpcUaDataPointQuery query)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         var exp = Expressionable.Create<OpcUaDataPoint>();
         exp.AndIF(!string.IsNullOrEmpty(query.name), e => e.name.Contains(query.name));
         exp.AndIF(!string.IsNullOrEmpty(query.category), e => e.category.Contains(query.category));
@@ -74,7 +74,6 @@ public class OpcUaDataPointDal : IOpcUaDataPointDal
 
     public List<string> SelectEndpoints()
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         List<string> list = db.Queryable<OpcUaDataPoint>().Select<string>(o => o.endpoint).Distinct().ToList();
         return list;
         
@@ -82,7 +81,6 @@ public class OpcUaDataPointDal : IOpcUaDataPointDal
 
     public void InsertBacth(List<OpcUaDataPoint> list)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         db.Ado.BeginTran();
         try
         {
@@ -100,7 +98,6 @@ public class OpcUaDataPointDal : IOpcUaDataPointDal
 
     public List<OpcUaPointDto> SelectAll(OpcUaDataPointQuery query)
     {
-        using var db = dbClientFactory.GetSqlSugarClient();
         var exp = Expressionable.Create<OpcUaDataPoint>();
         exp.AndIF(!string.IsNullOrEmpty(query.name), e => e.name.Contains(query.name));
         exp.AndIF(!string.IsNullOrEmpty(query.category), e => e.category.Contains(query.category));

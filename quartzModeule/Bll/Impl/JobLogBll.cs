@@ -12,17 +12,15 @@ namespace quartzModeule.Bll.Impl;
 [Service]
 public class JobLogBll : IJobLogBll
 {
-    private readonly DbClientFactory _dbClientFactory;
-
+    private readonly ISqlSugarClient db;
     public JobLogBll(DbClientFactory dbClientFactory)
     {
-        this._dbClientFactory = dbClientFactory;
+        this.db = dbClientFactory.db;
     }
     
     
     public void Save(JobLog jobLog)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         jobLog.id = YitIdHelper.NextId();
         db.Insertable<JobLog>(jobLog).ExecuteCommand();
     }
@@ -35,7 +33,6 @@ public class JobLogBll : IJobLogBll
         expr.AndIF(!string.IsNullOrEmpty(category), j => j.category.Contains(category));
         expr.AndIF(null != status , j => j.status == status);
         
-        using var db = _dbClientFactory.GetSqlSugarClient();
         pager.rows = await db.Queryable<JobLog>().Where(expr.ToExpression()).OrderByDescending( x => x.startTime).Skip(pager.getSkip()).Take(pager.pageSize).ToListAsync();
         pager.total = await db.Queryable<JobLog>().Where(expr.ToExpression()).CountAsync();
 
@@ -44,7 +41,6 @@ public class JobLogBll : IJobLogBll
 
     public Task Delete(List<long> ids)
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         if (ids.Count == 0)
         {
             return Task.CompletedTask;
@@ -57,7 +53,6 @@ public class JobLogBll : IJobLogBll
 
     public async Task ClearTable()
     {
-        using var db = _dbClientFactory.GetSqlSugarClient();
         await db.Ado.BeginTranAsync();
         try
         {
