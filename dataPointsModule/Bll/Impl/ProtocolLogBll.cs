@@ -1,4 +1,5 @@
-﻿using domain.Pojo.protocol;
+﻿using domain.Enums;
+using domain.Pojo.protocol;
 using domain.Records;
 using infrastructure.Attributes;
 using infrastructure.Db;
@@ -23,7 +24,18 @@ public class ProtocolLogBll : IProtocolLogBll
 
     public void Save(ProtocolLog protocolLog)
     {
-        db.Insertable<ProtocolLog>(protocolLog).ExecuteCommand();
+        ProtocolLog? p = db.Queryable<ProtocolLog>().Where(p => p.name.Equals(protocolLog.name) 
+                                                                && p.oper.Equals(OperateEnum.Read.ToString()))
+            .OrderByDescending(p => p.createdTime).First();
+        if (p is not null)
+        {
+            if(p.status == protocolLog.status && p.value.Equals(protocolLog.value))
+                return; // 读取数据与最新记录状态一致时忽略
+            db.Insertable<ProtocolLog>(protocolLog).ExecuteCommand();
+        }
+
+        else
+            db.Insertable<ProtocolLog>(protocolLog).ExecuteCommand();
     }
 
     public void Delete(List<long> ids)
