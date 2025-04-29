@@ -69,7 +69,7 @@ public class FileUtil
         {
             Directory.CreateDirectory(filePath);
         }
-        string fullFilePath = $"{Path.DirectorySeparatorChar}{filePath}{Path.DirectorySeparatorChar}{fullFileName}";
+        string fullFilePath = $"{filePath}{Path.DirectorySeparatorChar}{fullFileName}";
         if (File.Exists(fullFilePath))
         {
             File.Delete(fullFilePath);

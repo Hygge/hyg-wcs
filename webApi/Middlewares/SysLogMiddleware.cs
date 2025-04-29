@@ -15,11 +15,13 @@ public class SysLogMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ISysLogBll sysLogBll;
+    private readonly ILogger<SysLogMiddleware> logger;
 
-    public SysLogMiddleware(RequestDelegate next, ISysLogBll sysLog)
+    public SysLogMiddleware(RequestDelegate next, ISysLogBll sysLog, ILogger<SysLogMiddleware> logger)
     {
         this._next = next;
         this.sysLogBll = sysLog;
+        this.logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -45,9 +47,9 @@ public class SysLogMiddleware
             using Stream origin = context.Response.Body;
             using MemoryStream stream = new();
             context.Response.Body = stream;
-            SysLog sysLog = new SysLog();
             try
             {
+                SysLog sysLog = new SysLog();
                 sysLog.id = YitIdHelper.NextId();
                 sysLog.operatorName = userName;
                 sysLog.responseParam = string.Empty;
@@ -57,7 +59,6 @@ public class SysLogMiddleware
                 sysLog.path = context.Request.Path;
   
                 await _next(context);
-            
           
                 stream.Position = 0;
                 await stream.CopyToAsync(origin);
@@ -69,16 +70,15 @@ public class SysLogMiddleware
                 ApiResult apiResult = JsonConvert.DeserializeObject<ApiResult>(sysLog.responseParam);
                 if (HttpCode.SUCCESS_CODE != apiResult.code)
                     sysLog.executeStatus = false;
-            
+                long end = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                sysLog.executeTime = end - start;
+                sysLogBll.Save(sysLog);
             }
             catch (Exception e)
             {
-                sysLog.executeStatus = false;
-                sysLog.reason = e.Message;
+                logger.LogError(e, $"日志中间件异常，原因：{e.Message}");
             }
-            long end = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            sysLog.executeTime = end - start;
-            sysLogBll.Save(sysLog);
+          
         }
     }
 }
