@@ -59,11 +59,11 @@ public class ProtocolLogBll : IProtocolLogBll
         exp.AndIF(query.startTime != null, x => x.endTime >= query.startTime);
         exp.AndIF(query.endTime != null, x => x.endTime <= query.endTime);
 
+        int total = 0;
         List<ProtocolLog> list = db.Queryable<ProtocolLog>().Where(exp.ToExpression())
             .OrderByDescending(x => x.endTime)
-            .Skip(pager.getSkip()).Take(pager.pageSize)
-            .ToList();
-        pager.total = db.Queryable<ProtocolLog>().Where(exp.ToExpression()).Count();
+            .ToPageList(query.pageNum, query.pageSize, ref total);
+        pager.total = total;
         pager.rows = list;
         return pager;
     }

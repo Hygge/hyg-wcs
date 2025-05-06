@@ -48,11 +48,12 @@ public class OtherSysLogBll : IOtherSysLogBll
         exp.AndIF(null != executeStatus, x => x.executeStatus == executeStatus);
         exp.AndIF( null != startTime, x => x.operateTime >= startTime);
         exp.AndIF( null != endTime, x => x.operateTime <= endTime);
-        
-        pager.total = db.Queryable<OtherSysLog>().Where(exp.ToExpression()).Count();
+
+        int total = 0;
+       
         pager.rows = db.Queryable<OtherSysLog>().Where(exp.ToExpression()).OrderByDescending(x => x.operateTime)
-            .Skip(pager.getSkip()).Take(pager.pageSize)
-            .ToList();
+            .ToPageList(pageNum, pageSize, ref total);
+        pager.total = total;
         return pager;
     }
 }

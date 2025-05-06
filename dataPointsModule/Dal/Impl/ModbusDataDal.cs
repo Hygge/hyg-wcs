@@ -29,8 +29,9 @@ public class ModbusDataDal : IModbusDataDal
         exp.AndIF(!string.IsNullOrEmpty(query.ip), m => m.category.Contains(query.ip));
         exp.AndIF(query.startAddress is not null, m => m.startAddress == query.startAddress);
 
-        pager.rows = db.Queryable<ModbusDataPoint>().Where(exp.ToExpression()).Skip(pager.getSkip()).Take(pager.pageSize).ToList();
-        pager.total = db.Queryable<ModbusDataPoint>().Where(exp.ToExpression()).Count();
+        int total = 0;
+        pager.rows = db.Queryable<ModbusDataPoint>().Where(exp.ToExpression()).ToPageList(query.pageNum, query.pageSize, ref total);
+        pager.total = total;
 
         return pager;
     }

@@ -101,11 +101,11 @@ public class OtherSysInfoBll : IOtherSysInfoBll
         exp.AndIF(!string.IsNullOrEmpty(sysName), x => x.name.Contains(sysName));
         exp.AndIF( null != startTime, x => x.createdTime >= startTime);
         exp.AndIF( null != endTime, x => x.createdTime <= endTime);
-        
-        pager.total = db.Queryable<OtherSysInfo>().Where(exp.ToExpression()).Count();
+
+        int total = 0;
         pager.rows = db.Queryable<OtherSysInfo>().Where(exp.ToExpression()).OrderByDescending(x => x.createdTime)
-            .Skip(pager.getSkip()).Take(pager.pageSize)
-            .ToList();
+            .ToPageList(pageNum, pageSize, ref total);
+        pager.total = total;
         return pager;
     }
 }

@@ -64,10 +64,11 @@ public class OpcUaDataPointDal : IOpcUaDataPointDal
         exp.AndIF(!string.IsNullOrEmpty(query.ip), e => e.endpoint.Contains(query.ip));
 
         Pager<OpcUaDataPoint> pager = new(query.pageNum, query.pageSize);
+
+        int total = 0;
         pager.rows = db.Queryable<OpcUaDataPoint>().Where(exp.ToExpression())
-            .Skip(pager.getSkip()).Take(pager.pageSize)
-            .ToList();
-        pager.total = db.Queryable<OpcUaDataPoint>().Where(exp.ToExpression()).Count();
+            .ToPageList(query.pageNum, query.pageSize, ref total);
+        pager.total = total;
         
         return pager;
     }

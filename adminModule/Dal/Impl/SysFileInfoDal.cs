@@ -31,9 +31,10 @@ public class SysFileInfoDal : ISysFileInfoDal
         exp.AndIF(true, s => s.isDelete == true);
         exp.AndIF(type != null, f => f.fileType == (FileTypeEnum)type);
 
+        int total = 0;
         pager.rows = db.Queryable<SysFileInfo>().Where(exp.ToExpression()).OrderByDescending(d => d.createdTime)
-            .Skip(pager.getSkip()).Take(pager.pageSize).ToList();
-        pager.total = db.Queryable<SysFileInfo>().Where(exp.ToExpression()).Count();
+            .ToPageList(skip, take, ref  total);
+        pager.total = total;
         return pager;
     }
 }

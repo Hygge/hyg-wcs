@@ -33,8 +33,9 @@ public class JobLogBll : IJobLogBll
         expr.AndIF(!string.IsNullOrEmpty(category), j => j.category.Contains(category));
         expr.AndIF(null != status , j => j.status == status);
         
-        pager.rows = await db.Queryable<JobLog>().Where(expr.ToExpression()).OrderByDescending( x => x.startTime).Skip(pager.getSkip()).Take(pager.pageSize).ToListAsync();
-        pager.total = await db.Queryable<JobLog>().Where(expr.ToExpression()).CountAsync();
+        RefAsync<int> total = 0;
+        pager.rows = await db.Queryable<JobLog>().Where(expr.ToExpression()).OrderByDescending( x => x.startTime).ToPageListAsync(pageNum, pageSize, total);
+        pager.total = total.Value;
 
         return pager;
     }

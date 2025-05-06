@@ -82,9 +82,9 @@ namespace adminModule.Bll.Impl
             exp.AndIF(map["startTime"] != null,x => x.createdTime <= Convert.ToDateTime(map["startTime"]) &&
                     x.createdTime <= Convert.ToDateTime(map["endTime"]));
 
-
-            pager.total = db.Queryable<SysUser>().Where(exp.ToExpression()).Count();
-            List<SysUserVo> list = db.Queryable<SysUser>().Where(exp.ToExpression()).Skip(pager.getSkip()).Take(pager.pageSize).Select(item =>
+            int total = 0;
+       
+            List<SysUserVo> list = db.Queryable<SysUser>().Where(exp.ToExpression()).Select(item =>
                 new SysUserVo()
                 {
                     id = item.id,
@@ -96,7 +96,8 @@ namespace adminModule.Bll.Impl
                     createdTime = item.createdTime,
                     remark = item.remark
                 }
-            ).ToList();
+            ).ToPageList((int)map["pageNumber"], (int)map["pageSize"], ref total);
+            pager.total = total;
             foreach (var vo in list)
             {
                 var query = db.Queryable<SysUserAndRole>()
