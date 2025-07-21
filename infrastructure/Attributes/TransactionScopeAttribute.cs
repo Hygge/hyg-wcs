@@ -17,29 +17,53 @@ namespace infrastructure.Attributes;
 public class TransactionScopeAttribute : AbstractInterceptorAttribute
 {
 
-    public TransactionScopeOption option;
+    private readonly TransactionScopeOption option;
+    private readonly TransactionScopeAsyncFlowOption optionAsync;
     public TransactionScopeAttribute(TransactionScopeOption option){
         this.option = option;
     }
-    public TransactionScopeAttribute(){
-        
+    public TransactionScopeAttribute(TransactionScopeAsyncFlowOption optionAsync){
+        this.optionAsync = optionAsync;
+    }
+    
+    public TransactionScopeAttribute()
+    {
+        this.optionAsync = TransactionScopeAsyncFlowOption.Enabled;
+        this.option = TransactionScopeOption.Suppress;
     }
            
     public override async Task Invoke(AspectContext context, AspectDelegate next)
     {
-        if(option == null)
-            option = TransactionScopeOption.Suppress;
-        using var scope = new TransactionScope(option);
-         try{
+        if (context.IsAsync())
+        {
+            using var scope = new TransactionScope(optionAsync);
+            try
+            {
+                await next(context);
+                scope.Complete();
 
-            await next(context);
-            scope.Complete();
+            }catch(Exception ex)
+            {
+                ServiceUtil.GetRequiredService<ILogger<TransactionScopeAttribute>>().LogError(ex, $"当前事务异常，原因：{ex.Message}");
+                throw new BusinessException(ex.Message);
+            }
+        }
+        else
+        {
+            using var scope = new TransactionScope(option);
+            try
+            {
+                await next(context);
+                scope.Complete();
 
-         }catch(Exception ex)
-         {
-            ServiceUtil.GetRequiredService<ILogger<TransactionScopeAttribute>>().LogError(ex, $"当前事务异常，原因：{ex.Message}");
-            throw new BusinessException(ex.Message);
-         }
+            }catch(Exception ex)
+            {
+                ServiceUtil.GetRequiredService<ILogger<TransactionScopeAttribute>>().LogError(ex, $"当前事务异常，原因：{ex.Message}");
+                throw new BusinessException(ex.Message);
+            }
+        }
+
     }
+    
 
 }

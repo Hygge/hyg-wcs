@@ -58,13 +58,6 @@ namespace infrastructure
             // 启动访问上下文 同理也可以使用自定义接口token获取对应上下文参数
             builder.Services.AddHttpContextAccessor();
 
-            // 注册筛选器
-            builder.Services.Configure<MvcOptions>(opt =>
-            {
-                opt.Filters.Add<GlobalExceptionFilter>();
-
-            });
-
 
 
             #region Swagger配置
