@@ -74,17 +74,20 @@ public class FileUtil
         {
             File.Delete(fullFilePath);
         }
-        using (Stream stream = file.OpenReadStream())
-        {
-            byte[] bytes = new byte[stream.Length];
-            stream.Read(bytes, 0, bytes.Length);
-            stream.Seek(0, SeekOrigin.Begin);
-            FileStream fs = new FileStream(fullFilePath, FileMode.Create, FileAccess.Write);
-            BinaryWriter bw = new BinaryWriter(fs);
-            bw.Write(bytes);
-            bw.Close();
-            fs.Close();
-        }
+        // using (Stream stream = file.OpenReadStream())
+        // {
+        //     byte[] bytes = new byte[stream.Length];
+        //     stream.Read(bytes, 0, bytes.Length);
+        //     stream.Seek(0, SeekOrigin.Begin);
+        //     FileStream fs = new FileStream(fullFilePath, FileMode.Create, FileAccess.Write);
+        //     BinaryWriter bw = new BinaryWriter(fs);
+        //     bw.Write(bytes);
+        //     bw.Close();
+        //     fs.Close();
+        // }
+        using FileStream fs = new FileStream(fullFilePath, FileMode.Create, FileAccess.Write);
+        using Stream fileStream = file.OpenReadStream();
+        fileStream.CopyTo(fs);
     }
 
     
